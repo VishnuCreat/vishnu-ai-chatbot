@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Vishnu AI</title>
+</head>
+<body style="font-family:Arial; background:#202123; color:white; text-align:center; margin-top:100px;">
+
+<h2>Vishnu AI Login</h2>
+
+<input id="username" placeholder="Username"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+
+<script>
+async function login(){
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
+
+    let res = await fetch("http://127.0.0.1:8000/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+
+    let data = await res.json();
+
+    if(data.message){
+        localStorage.setItem("username", username);
+        window.location = "index.html";
+    } else {
+        alert("Login failed");
+    }
+}
+
+async function register(){
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
+
+    let res = await fetch("http://127.0.0.1:8000/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+
+    let data = await res.json();
+
+    if(data.message){
+        localStorage.setItem("username", username);
+        window.location = "index.html";
+    } else {
+        alert("User already exists");
+    }
+}
+</script>
+
+</body>
+</html>

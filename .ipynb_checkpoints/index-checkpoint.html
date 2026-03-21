@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vishnu AI Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { margin: 0; font-family: Arial; background: #202123; color: white; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: #111; padding: 20px; overflow-y: auto; }
+        .sidebar button { width: 100%; padding: 10px; background: #19c37d; border: none; color: white; margin-bottom: 10px; cursor: pointer; }
+        .chat-item { cursor: pointer; padding: 10px; border-bottom: 1px solid #333; }
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .header { background: #343541; padding: 15px; font-size: 20px; }
+        #chat { flex: 1; overflow-y: auto; padding: 30px; background: #343541; }
+        .message-row { display: flex; margin-bottom: 15px; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: #19c37d; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+        .user .avatar { background: #0b93f6; }
+        .msg { padding: 12px; border-radius: 10px; max-width: 70%; }
+        .user { justify-content: flex-end; }
+        .user .msg { background: #0b93f6; }
+        .bot .msg { background: #444654; }
+        .inputArea { display: flex; padding: 10px; background: #40414f; }
+        textarea { flex: 1; padding: 12px; font-size: 16px; resize: none; height: 60px; }
+        button.send { padding: 12px; background: #19c37d; border: none; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<script>
+if(!localStorage.getItem("username")){
+    window.location = "login.html";
+}
+</script>
+
+<div class="container">
+    <div class="sidebar">
+        <h2 id="usernameDisplay"></h2>
+        <button onclick="newChat()">+ New Chat</button>
+        <button onclick="logout()">Logout</button>
+        <div id="chatList"></div>
+    </div>
+
+    <div class="main">
+        <div class="header">Vishnu AI Assistant</div>
+        <div id="chat"></div>
+        <div class="inputArea">
+            <textarea id="message" placeholder="Type message..."></textarea>
+            <button class="send" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("usernameDisplay").innerText =
+    "User: " + localStorage.getItem("username");
+
+let currentChat = Date.now().toString();
+
+function logout(){
+    localStorage.removeItem("username");
+    window.location = "login.html";
+}
+
+async function sendMessage() {
+    let message = document.getElementById("message").value;
+    let chat = document.getElementById("chat");
+
+    if(message.trim() === "") return;
+
+    chat.innerHTML += `<div class="message-row user"><div class="msg">${message}</div><div class="avatar">U</div></div>`;
+
+    let botDiv = document.createElement("div");
+    botDiv.className = "message-row bot";
+    let botMsgDiv = document.createElement("div");
+    botMsgDiv.className = "msg";
+    botDiv.innerHTML = `<div class="avatar">AI</div>`;
+    botDiv.appendChild(botMsgDiv);
+    chat.appendChild(botDiv);
+
+    let response = await fetch("http://127.0.0.1:8000/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            message: message,
+            chat_id: currentChat,
+            username: localStorage.getItem("username")
+        })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    let fullText = "";
+
+    while(true) {
+        const { done, value } = await reader.read();
+        if(done) break;
+
+        fullText += decoder.decode(value);
+        botMsgDiv.innerHTML = marked.parse(fullText);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById("message").value = "";
+    loadChats();
+}
+
+function newChat() {
+    currentChat = Date.now().toString();
+    document.getElementById("chat").innerHTML = "";
+}
+
+async function loadChats() {
+    let username = localStorage.getItem("username");
+    let response = await fetch(`http://127.0.0.1:8000/chats/${username}`);
+    let data = await response.json();
+    let chatList = document.getElementById("chatList");
+    chatList.innerHTML = "";
+
+    data.chats.forEach(chatId => {
+        chatList.innerHTML += `<div class="chat-item" onclick="loadMessages('${chatId}')">Chat ${chatId}</div>`;
+    });
+}
+
+async function loadMessages(chatId) {
+    currentChat = chatId;
+    let username = localStorage.getItem("username");
+    let response = await fetch(`http://127.0.0.1:8000/messages/${chatId}/${username}`);
+    let data = await response.json();
+    let chat = document.getElementById("chat");
+    chat.innerHTML = "";
+
+    data.messages.forEach(msg => {
+        let formatted = marked.parse(msg.content);
+        if(msg.role === "user")
+            chat.innerHTML += `<div class="message-row user"><div class="msg">${formatted}</div><div class="avatar">U</div></div>`;
+        else
+            chat.innerHTML += `<div class="message-row bot"><div class="avatar">AI</div><div class="msg">${formatted}</div></div>`;
+    });
+}
+
+document.getElementById("message").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+loadChats();
+</script>
+
+</body>
+</html>
