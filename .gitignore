@@ -1,0 +1,4 @@
+.env
+chat.db
+__pycache__/
+.ipynb_checkpoints/
