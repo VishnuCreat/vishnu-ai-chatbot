@@ -77,7 +77,7 @@ async function sendMessage() {
     botDiv.appendChild(botMsgDiv);
     chat.appendChild(botDiv);
 
-    let response = await fetch("http://127.0.0.1:8000/chat", {
+    let response = await fetch("/chat", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -112,7 +112,7 @@ function newChat() {
 
 async function loadChats() {
     let username = localStorage.getItem("username");
-    let response = await fetch(`http://127.0.0.1:8000/chats/${username}`);
+    let response = await fetch(`/chats/${username}`);
     let data = await response.json();
     let chatList = document.getElementById("chatList");
     chatList.innerHTML = "";
@@ -125,7 +125,7 @@ async function loadChats() {
 async function loadMessages(chatId) {
     currentChat = chatId;
     let username = localStorage.getItem("username");
-    let response = await fetch(`http://127.0.0.1:8000/messages/${chatId}/${username}`);
+    let response = await fetch(`/messages/${chatId}/${username}`);
     let data = await response.json();
     let chat = document.getElementById("chat");
     chat.innerHTML = "";
