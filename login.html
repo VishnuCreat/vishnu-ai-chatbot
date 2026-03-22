@@ -26,7 +26,7 @@ async function login(){
 
     let data = await res.json();
 
-    if(data.status === "success"){
+    if(data.message === "Login successful"){
         localStorage.setItem("username", username);
         window.location = "index.html";
     } else {
@@ -46,11 +46,12 @@ async function register(){
 
     let data = await res.json();
 
-    if(data.status === "registered"){
+    if(data.message === "User registered"){
+        alert("Registered successfully ✅");
         localStorage.setItem("username", username);
         window.location = "index.html";
     } else {
-        alert("Register failed");
+        alert("Register failed ❌");
     }
 }
 </script>
