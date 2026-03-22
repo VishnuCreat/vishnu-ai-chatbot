@@ -14,7 +14,7 @@ load_dotenv()
 app = FastAPI()
 
 # Serve HTML files
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
