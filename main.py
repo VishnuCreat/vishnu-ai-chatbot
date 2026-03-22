@@ -4,8 +4,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -13,8 +12,18 @@ load_dotenv()
 
 app = FastAPI()
 
-# Serve HTML files
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+# Serve HTML pages
+@app.get("/")
+def home():
+    return FileResponse("login.html")
+
+@app.get("/login.html")
+def login_page():
+    return FileResponse("login.html")
+
+@app.get("/index.html")
+def index_page():
+    return FileResponse("index.html")
 
 app.add_middleware(
     CORSMiddleware,
