@@ -18,7 +18,7 @@ async function login(){
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
 
-    let res = await fetch("http://127.0.0.1:8000/login", {
+    let res = await fetch("/login", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({username, password})
@@ -26,7 +26,7 @@ async function login(){
 
     let data = await res.json();
 
-    if(data.message){
+    if(data.status === "success"){
         localStorage.setItem("username", username);
         window.location = "index.html";
     } else {
@@ -38,7 +38,7 @@ async function register(){
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
 
-    let res = await fetch("http://127.0.0.1:8000/register", {
+    let res = await fetch("/register", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({username, password})
@@ -46,11 +46,11 @@ async function register(){
 
     let data = await res.json();
 
-    if(data.message){
+    if(data.status === "registered"){
         localStorage.setItem("username", username);
         window.location = "index.html";
     } else {
-        alert("User already exists");
+        alert("Register failed");
     }
 }
 </script>
